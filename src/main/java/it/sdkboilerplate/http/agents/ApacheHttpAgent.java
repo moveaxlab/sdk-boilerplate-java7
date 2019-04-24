@@ -5,21 +5,31 @@ import it.sdkboilerplate.exceptions.*;
 import it.sdkboilerplate.http.SdkRequest;
 import it.sdkboilerplate.http.SdkResponse;
 import org.apache.http.Header;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -140,9 +150,55 @@ public class ApacheHttpAgent extends UserAgent {
 
     private CloseableHttpClient getClient() {
         HttpClientBuilder builder = HttpClients.custom();
-        if (!(Boolean) this.getConfig().get("verifySSL"))
-            builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+        if (this.isProxyRequest()) {
+            this.setRequestProxy(builder);
+        }
+
+        if (!(Boolean) this.getConfig().get("verifySSL")) {
+            try {
+                builder.setHostnameVerifier(new AllowAllHostnameVerifier()).
+                        setSslcontext(new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
+                            public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                                return true;
+                            }
+                        }).build());
+            } catch (Exception exc) {
+                throw new RuntimeException();
+            }
+
+        }
+
         return builder.build();
     }
 
+    private void setRequestProxy(HttpClientBuilder builder) {
+        HashMap proxyConfig = this.getProxyConfig();
+        HttpHost proxy = new HttpHost((String) proxyConfig.get("hostname"), (int) proxyConfig.get("port"), (String) proxyConfig.get("protocol"));
+        builder.setProxy(proxy);
+        if (this.isProxyAuthenticated()) {
+            HashMap credentialsConfig = this.getProxyCredentials();
+            Credentials proxyCredentials = new UsernamePasswordCredentials((String) credentialsConfig.get("user"), (String) credentialsConfig.get("password"));
+            AuthScope authScope = new AuthScope((String) proxyConfig.get("hostname"), (int) proxyConfig.get("port"));
+            CredentialsProvider provider = new BasicCredentialsProvider();
+            provider.setCredentials(authScope, proxyCredentials);
+            builder.setDefaultCredentialsProvider(provider);
+
+        }
+    }
+
+    private boolean isProxyRequest() {
+        return this.getConfig().containsKey("proxy");
+    }
+
+    private HashMap<String, Object> getProxyConfig() {
+        return (HashMap<String, Object>) this.getConfig().get("proxy");
+    }
+
+    private boolean isProxyAuthenticated() {
+        return this.getProxyConfig().containsKey("credentials");
+    }
+
+    private HashMap<String, String> getProxyCredentials() {
+        return (HashMap) this.getProxyConfig().get("credentials");
+    }
 }
