@@ -1,0 +1,6 @@
+# Maven
+sdk-boilerplate.iml
+target/
+
+# IntelliJ
+*.idea
