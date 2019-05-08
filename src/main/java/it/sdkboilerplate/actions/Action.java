@@ -328,6 +328,8 @@ public abstract class Action {
                 Class<? extends SdkHttpException> exceptionClass = this.getException(response);
                 SdkHttpException exceptionInstance = exceptionClass.getConstructor().newInstance();
                 // Run the failure hooks and throw the exception
+                exceptionInstance.setRawRequest(serializedBody);
+                exceptionInstance.setRawResponse(response.getRawBody());
                 this.runFailureHooks(request, response, exceptionInstance);
                 throw exceptionInstance;
             } catch (NoSuchMethodException e) {

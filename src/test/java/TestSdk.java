@@ -141,7 +141,7 @@ public class TestSdk {
 
         Arrays.sort(sortedUser);
         Arrays.sort(sortedCheckUser);
-        //TODO SORT THE STRINGS USING 1.6 METHODS
+
         Assert.assertEquals(new String(sortedUser), new String(sortedCheckUser));
         ArrayList<TestAccount> accounts = new ArrayList();
         accounts.add(new TestAccount("testAccount"));
@@ -268,13 +268,14 @@ public class TestSdk {
     public void testActionFailureRun() throws Exception {
         TestCreateUserAction testCreateUser = this.setupUserCreationAction();
 
-        SdkResponse testResponse = new SdkResponse(422, null, this.getDefaultResponseHeaders());
+        SdkResponse testResponse = new SdkResponse(422, "failureResponse", this.getDefaultResponseHeaders());
         ApacheHttpAgent mockAgent = PowerMockito.spy(new ApacheHttpAgent(this.ctx.getHostname(), this.ctx.getConfig()));
         PowerMockito.doReturn(testResponse).when(mockAgent, "send", any());
         PowerMockito.doReturn(mockAgent).when(testCreateUser, "getUserAgent");
         try {
             testCreateUser.run();
         } catch (ValidationException e) {
+            Assert.assertEquals(e.getRawResponse(), "failureResponse");
             PowerMockito.verifyPrivate(testCreateUser, times(0)).invoke("runSuccessHooks", any(SdkRequest.class), any(SdkResponse.class));
             PowerMockito.verifyPrivate(testCreateUser, times(1)).invoke("runFailureHooks", any(SdkRequest.class), any(SdkResponse.class), any(ValidationException.class));
             throw e;
