@@ -274,7 +274,6 @@ public class TestSdk {
         try {
             testCreateUser.run();
         } catch (ValidationException e) {
-            System.out.println(e.getDebugInfo());
             PowerMockito.verifyPrivate(testCreateUser, times(0)).invoke("runSuccessHooks", any(SdkRequest.class), any(SdkResponse.class));
             PowerMockito.verifyPrivate(testCreateUser, times(1)).invoke("runFailureHooks", any(SdkRequest.class), any(SdkResponse.class), any(ValidationException.class));
             throw e;
