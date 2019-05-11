@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract Action class. Subclasses must defines getters for elements which will be used to
@@ -195,6 +196,7 @@ public abstract class Action {
 
         Class<? extends SdkHttpException> exceptionClass = this.getErrors().get(this.getExceptionKey(sdkResponse));
         if (exceptionClass == null) {
+
             throw new UnknownHttpException();
         }
         return exceptionClass;
@@ -323,15 +325,18 @@ public abstract class Action {
         SdkResponse response = agent.send(request);
 
         if (response.isFailed()) {
+            String debugInfo = this.buildDebugInfo(request, response);
             try {
                 // If the response has a status code not in 200-299, runs the failure hooks and throws the appropriate defined exception
                 Class<? extends SdkHttpException> exceptionClass = this.getException(response);
                 SdkHttpException exceptionInstance = exceptionClass.getConstructor().newInstance();
+                exceptionInstance.setDebugInfo(debugInfo);
                 // Run the failure hooks and throw the exception
-                exceptionInstance.setRawRequest(serializedBody);
-                exceptionInstance.setRawResponse(response.getRawBody());
                 this.runFailureHooks(request, response, exceptionInstance);
                 throw exceptionInstance;
+            } catch (UnknownHttpException e) {
+                e.setDebugInfo(debugInfo);
+                throw e;
             } catch (NoSuchMethodException e) {
                 throw new MalformedSdkException(e.getMessage());
             } catch (IllegalAccessException e) {
@@ -347,6 +352,42 @@ public abstract class Action {
             Class<? extends SdkBodyType> responseBodyClass = this.getResponseBodyClass();
             return response.format(responseBodyClass);
         }
+    }
+
+    private String buildDebugInfo(SdkRequest request, SdkResponse response) throws SdkException {
+        StringBuilder debugInfoBuilder = new StringBuilder();
+        return debugInfoBuilder
+                .append("Request\n\n")
+                .append("Route: ")
+                .append(request.getRoute())
+                .append("\n")
+                .append("Headers: \n")
+                .append(this.hashMapToInfo(request.getHeaders()))
+                .append("Body \n")
+                .append(this.serializeRequestBody())
+                .append("Query Parameters\n")
+                .append(this.hashMapToInfo(request.getQueryParameters()))
+                .append("Response: \n")
+                .append("Headers: \n")
+                .append(this.hashMapToInfo(response.getHeaders()))
+                .append("Status: \n")
+                .append(response.getStatusCode())
+                .append("\n")
+                .append("Body: \n")
+                .append(response.getRawBody())
+                .append("\n")
+                .toString();
+    }
+
+    private String hashMapToInfo(HashMap<String, String> map) {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry entry : map.entrySet()) {
+            builder.append(entry.getKey())
+                    .append(" :")
+                    .append(entry.getValue())
+                    .append("\n");
+        }
+        return builder.toString();
     }
 
     public Action(ApiContext ctx) {

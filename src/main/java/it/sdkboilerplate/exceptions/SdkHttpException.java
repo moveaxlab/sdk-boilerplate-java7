@@ -4,22 +4,22 @@ package it.sdkboilerplate.exceptions;
  * Sdk Http Exception class.
  */
 public abstract class SdkHttpException extends SdkException {
-    private String rawRequest;
-    private String rawResponse;
+    private String debugInfo;
+    private String requestId;
 
-    public void setRawRequest(String rawRequest) {
-        this.rawRequest = rawRequest;
+    public String getDebugInfo() {
+        return debugInfo;
     }
 
-    public void setRawResponse(String rawResponse) {
-        this.rawResponse = rawResponse;
+    public void setDebugInfo(String debugInfo) {
+        this.debugInfo = debugInfo;
     }
 
-    public String getRawRequest() {
-        return rawRequest;
+    public String getRequestId() {
+        return requestId;
     }
 
-    public String getRawResponse() {
-        return rawResponse;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 }

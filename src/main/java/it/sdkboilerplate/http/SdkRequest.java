@@ -1,6 +1,7 @@
 package it.sdkboilerplate.http;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class SdkRequest {
     private String route;
@@ -41,4 +42,6 @@ public class SdkRequest {
         this.queryParameters = queryParameters;
         this.body = body;
     }
+
+
 }
