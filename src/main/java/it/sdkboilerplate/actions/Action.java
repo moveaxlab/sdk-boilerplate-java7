@@ -249,7 +249,7 @@ public abstract class Action {
         }
     }
 
-    private void runFailureHooks(SdkRequest request, SdkResponse response, SdkException exception) throws SdkException {
+    private void runFailureHooks(SdkRequest request, SdkResponse response, SdkHttpException exception) throws SdkException {
         try {
             ArrayList<Hook> hooks = new ArrayList();
             for (Class<? extends FailureHook> failureHookClass : this.getFailureHooks()) {
@@ -257,7 +257,7 @@ public abstract class Action {
                         ApiContext.class,
                         SdkRequest.class,
                         SdkResponse.class,
-                        SdkException.class);
+                        SdkHttpException.class);
                 hooks.add(hookConstructor.newInstance(this.ctx, request, response, exception));
             }
             this.runHooks(hooks);
