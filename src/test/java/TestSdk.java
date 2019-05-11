@@ -14,7 +14,6 @@ import mocks.actions.TestCreateUserAction;
 import mocks.actions.TestRetrieveUserAction;
 import mocks.exceptions.ValidationException;
 import mocks.objects.*;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -275,7 +274,7 @@ public class TestSdk {
         try {
             testCreateUser.run();
         } catch (ValidationException e) {
-            Assert.assertEquals(e.getRawResponse(), "failureResponse");
+            System.out.println(e.getDebugInfo());
             PowerMockito.verifyPrivate(testCreateUser, times(0)).invoke("runSuccessHooks", any(SdkRequest.class), any(SdkResponse.class));
             PowerMockito.verifyPrivate(testCreateUser, times(1)).invoke("runFailureHooks", any(SdkRequest.class), any(SdkResponse.class), any(ValidationException.class));
             throw e;
@@ -295,19 +294,5 @@ public class TestSdk {
 
     }
 
-    /**
-     * Tests OkHttpClient User Agent send method
-     */
-    @Test
-    @PrepareForTest(ApacheHttpAgent.class)
-    public void testUserAgentSend() throws Exception {
-        ApacheHttpAgent mockAgent = PowerMockito.spy(new ApacheHttpAgent(this.ctx.getHostname(), this.ctx.getConfig()));
-        SdkRequest request = new SdkRequest("/testRoute", "POST", this.getDefaultRequestHeaders(), new HashMap(), this.userCreationJsonSerialization);
-        /*
-        TODO test internal agents methods call
-         */
-
-
-    }
 
 }

@@ -358,22 +358,26 @@ public abstract class Action {
         StringBuilder debugInfoBuilder = new StringBuilder();
         return debugInfoBuilder
                 .append("Request\n\n")
-                .append("Route: ")
+                .append("    Route: ")
                 .append(request.getRoute())
                 .append("\n")
-                .append("Headers: \n")
+                .append("    Headers: \n")
                 .append(this.hashMapToInfo(request.getHeaders()))
-                .append("Body \n")
+                .append("    Body: \n")
+                .append("        ")
                 .append(this.serializeRequestBody())
-                .append("Query Parameters\n")
+                .append("\n")
+                .append("    Query Parameters:\n")
                 .append(this.hashMapToInfo(request.getQueryParameters()))
+                .append("\n\n")
                 .append("Response: \n")
-                .append("Headers: \n")
+                .append("    Headers: \n")
                 .append(this.hashMapToInfo(response.getHeaders()))
-                .append("Status: \n")
+                .append("    Status: ")
                 .append(response.getStatusCode())
                 .append("\n")
-                .append("Body: \n")
+                .append("    Body: \n")
+                .append("        ")
                 .append(response.getRawBody())
                 .append("\n")
                 .toString();
@@ -382,8 +386,9 @@ public abstract class Action {
     private String hashMapToInfo(HashMap<String, String> map) {
         StringBuilder builder = new StringBuilder();
         for (Map.Entry entry : map.entrySet()) {
-            builder.append(entry.getKey())
-                    .append(" :")
+            builder.append("        ")
+                    .append(entry.getKey())
+                    .append("  :")
                     .append(entry.getValue())
                     .append("\n");
         }
