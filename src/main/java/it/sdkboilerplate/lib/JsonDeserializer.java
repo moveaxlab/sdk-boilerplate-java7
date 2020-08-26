@@ -112,11 +112,8 @@ public class JsonDeserializer implements Deserializer {
             Method setter = instance.getClass().getMethod("set" + attributeName, attributeType);
             setter.invoke(instance, attributeValue);
         } catch (NoSuchMethodException e) {
-            throw new MalformedSdkObjectException(e.getMessage());
         } catch (IllegalAccessException e) {
-            throw new MalformedSdkObjectException(e.getMessage());
         } catch (InvocationTargetException e) {
-            throw new MalformedSdkObjectException(e.getMessage());
         }
     }
 
