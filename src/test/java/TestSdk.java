@@ -52,6 +52,12 @@ public class TestSdk {
             "\"name\":\"testName\"," +
             "\"surname\":\"testSurname\"}";
 
+    private final String userRetrievalExtraJsonSerialization = "{\"accounts\":[{\"name\": \"testAccount\"}]," +
+            "\"contact\":{\"type\":\"email\",\"value\":\"testEmail\"}," +
+            "\"name\":\"testName\"," +
+            "\"surname\":\"testSurname\"," +
+            "\"newField\":\"newValue\"}";
+
     private final String userCreationJsonSerialization = "{\"name\":\"testName\",\"surname\":\"testSurname\"}";
 
     public TestSdk() throws ConfigurationException {
@@ -197,6 +203,12 @@ public class TestSdk {
 
     }
 
+    @Test
+    public void testJsonToObjectExtraFields() throws DeserializationException, UnknownBodyTypeException{
+        JsonDeserializer jsonDeserializer = new JsonDeserializer();
+        TestUserRetrieval userRetrieval = (TestUserRetrieval) jsonDeserializer.deserialize(this.userRetrievalExtraJsonSerialization, TestUserRetrieval.class);
+        this.checkUserRetrieval(userRetrieval);
+    }
     /**
      * Tests Response Body Form Formatting
      */
